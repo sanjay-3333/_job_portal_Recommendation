@@ -1,0 +1,6 @@
+job_id,title,company,location,description,skills
+1,Data Scientist,TechCorp,Bangalore,Analyze data and build models,"python, pandas"
+2,Software Engineer,CodeBase,Chennai,Develop web applications,"java, spring"
+3,Backend Developer,APIInc,Mumbai,Design backend services,"python, flask, sql"
+4,ML Engineer,BrainBot,Pune,Build ML pipelines,"tensorflow, keras"
+5,BI Analyst,Insightful,Remote,Business reports,"powerbi, sql"

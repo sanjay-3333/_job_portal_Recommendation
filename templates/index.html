@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hybrid Job Recommender</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #4a148c;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 600px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #6a1b9a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #4a148c;
+    }
+
+    .output {
+      margin-top: 20px;
+    }
+
+    .job-card {
+      background-color: #f9f9f9;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .job-card h4 {
+      margin: 0 0 5px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .job-card p {
+      margin: 3px 0;
+      color: #666;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .loading {
+      font-style: italic;
+      color: #444;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hybrid Job Recommendation</h1>
+  <div class="container">
+    <label for="user_id">User ID:</label>
+    <input type="number" id="user_id" placeholder="Enter your user ID" required />
+
+    <label for="skills">Skills (comma-separated):</label>
+    <input type="text" id="skills" placeholder="e.g. python, sql, pandas" required />
+
+    <label for="top_n">Top N Jobs:</label>
+    <input type="number" id="top_n" value="5" />
+
+    <button onclick="getRecommendations()">Get Recommendations</button>
+
+    <div class="output" id="result"></div>
+  </div>
+
+  <script>
+    async function getRecommendations() {
+      const user_id = parseInt(document.getElementById("user_id").value);
+      const skills = document.getElementById("skills").value.trim();
+      const top_n = parseInt(document.getElementById("top_n").value);
+      const resultDiv = document.getElementById("result");
+
+      // Clear and show loading
+      resultDiv.innerHTML = "<p class='loading'>Fetching recommendations...</p>";
+
+      // Basic input validation
+      if (!user_id || !skills || !top_n || top_n <= 0) {
+        resultDiv.innerHTML = "<p class='error'>Please enter valid User ID, Skills, and Top N value.</p>";
+        return;
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/recommend/hybrid/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id, skills, top_n })
+        });
+
+        if (!response.ok) {
+          throw new Error("Server returned an error. Check your FastAPI backend.");
+        }
+
+        const data = await response.json();
+        resultDiv.innerHTML = "";
+
+        if (!data.recommendations || data.recommendations.length === 0) {
+          resultDiv.innerHTML = "<p>No recommendations found.</p>";
+          return;
+        }
+
+        // Display each job card
+        data.recommendations.forEach(job => {
+          const card = document.createElement("div");
+          card.className = "job-card";
+          card.innerHTML = `
+            <h4>${job.title || "Untitled Job"}</h4>
+            <p><strong>Company:</strong> ${job.company || "N/A"}</p>
+            <p><strong>Location:</strong> ${job.location || "N/A"}</p>
+            <p><strong>Skills:</strong> ${job.skills || "N/A"}</p>
+          `;
+          resultDiv.appendChild(card);
+        });
+
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
